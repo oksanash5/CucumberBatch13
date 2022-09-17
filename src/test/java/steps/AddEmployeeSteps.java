@@ -1,20 +1,23 @@
 package steps;
 
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.junit.Assert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
-import utils.CommonMethods;
-import utils.Constants;
-import utils.ExcelReader;
+import utils.*;
 
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 public class AddEmployeeSteps extends CommonMethods {
+   String firstNameFromUI;
+   String lastNameFromUI;
+   String idFromUI;
+
 
     @When("user clicks on add employee option")
     public void user_clicks_on_add_employee_option() {
@@ -41,9 +44,11 @@ public class AddEmployeeSteps extends CommonMethods {
 
     @When("user enters {string} , {string} and {string}")
     public void user_enters_and(String firstName, String middleName, String lastName) {
+      this.firstNameFromUI =firstName;
+      this.lastNameFromUI =lastName;
         sendText(addEmployeePage.firstName, firstName);
         sendText(addEmployeePage.middleName, middleName);
-        System.out.println(addEmployeePage.lastName);
+        sendText(addEmployeePage.lastName,lastName);
     }
 
     @When("user enter {string} , {string} and {string}")
@@ -147,6 +152,21 @@ public class AddEmployeeSteps extends CommonMethods {
         }
     }
 
+    @And("user grabs Id")
+    public void userGrabsId() {
+       idFromUI= addEmployeePage.empIdLoc.getAttribute("value");
+
+    }
+    @Then("fetch the data from backend and verify it")
+    public void fetchTheDataFromBackendAndVerifyIt() {
+    String query=DbQueries.FETCH_FNAME_LNAME+ idFromUI +"'";
+    List<Map<String,String>> dbData= DbUtils.fetchDbData(query);
+    String firstNameFromDB=dbData.get(0).get("emp_firstname");
+    String lastNameFromDB=dbData.get(0).get("emp_lastname");
+
+    Assert.assertEquals(firstNameFromUI,firstNameFromDB);
+    Assert.assertEquals(lastNameFromUI,lastNameFromDB);
+    }
 }
 
 
